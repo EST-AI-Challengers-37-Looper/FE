@@ -203,7 +203,14 @@ export function PickupZoneSelector({
       bounds.extend(position);
     });
 
-    if (locatedZones.length > 0) map.setBounds(bounds);
+    if (locatedZones.length > 0) {
+      map.setBounds(bounds);
+    } else {
+      // 좌표 있는 존이 없으면 캠퍼스 중심으로 이동 (SDK 초기화보다 zones 로드가
+      // 늦을 때를 대비)
+      const fallback = HUFS_SEOUL_FALLBACK_CENTER;
+      map.setCenter(new sdk.maps.LatLng(fallback.latitude, fallback.longitude));
+    }
 
     // 선택된 마커가 있으면 InfoWindow 바로 열기
     const selectedZone = locatedZones.find((z) => z.id === value);
@@ -309,6 +316,11 @@ export function PickupZoneSelector({
             {mapStatus === 'loading' && (
               <div className="absolute inset-0 flex items-center justify-center rounded-card bg-white/70 text-sm text-ink-500">
                 지도를 불러오는 중…
+              </div>
+            )}
+            {mapStatus === 'ready' && locatedZones.length === 0 && (
+              <div className="absolute inset-x-0 bottom-0 flex items-center justify-center rounded-b-card bg-black/50 px-4 py-2 text-center text-xs text-white">
+                아직 마커로 표시할 픽업존 좌표가 없어요. 아래 목록에서 선택해주세요.
               </div>
             )}
           </div>
